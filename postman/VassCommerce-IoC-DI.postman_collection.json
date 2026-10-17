@@ -1,0 +1,155 @@
+{
+  "info": {
+    "name": "VassCommerce - IoC/DI",
+    "description": "Rode a colecao com a API no perfil mem (ids 1, 2...) e depois no perfil sql (ids 1001, 1002...).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "produtoId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Criar produto - 201",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created com Location', () => {",
+              "    pm.response.to.have.status(201);",
+              "    pm.response.to.have.header('Location');",
+              "});",
+              "pm.collectionVariables.set('produtoId', pm.response.json().id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Notebook Gamer\",\n  \"descricao\": \"16GB RAM, SSD 512GB\",\n  \"valor\": 4599.90\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{baseUrl}}/produto", "host": ["{{baseUrl}}"], "path": ["produto"] }
+      }
+    },
+    {
+      "name": "Buscar por id - 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/produto/{{produtoId}}", "host": ["{{baseUrl}}"], "path": ["produto", "{{produtoId}}"] }
+      }
+    },
+    {
+      "name": "Buscar id inexistente - 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": ["pm.test('404 Not Found', () => pm.response.to.have.status(404));"]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/produto/999999", "host": ["{{baseUrl}}"], "path": ["produto", "999999"] }
+      }
+    },
+    {
+      "name": "Listar com filtros - 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/produto?nome=note&valorMinimo=1000&valorMaximo=5000",
+          "host": ["{{baseUrl}}"],
+          "path": ["produto"],
+          "query": [
+            { "key": "nome", "value": "note" },
+            { "key": "valorMinimo", "value": "1000" },
+            { "key": "valorMaximo", "value": "5000" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Criar produto invalido - 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('400 com JSON padronizado', () => {",
+              "    pm.response.to.have.status(400);",
+              "    pm.expect(pm.response.json().error).to.eql('Invalid input');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"\",\n  \"valor\": -5\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{baseUrl}}/produto", "host": ["{{baseUrl}}"], "path": ["produto"] }
+      }
+    },
+    {
+      "name": "Criar com JSON malformado - 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('400 com JSON padronizado', () => {",
+              "    pm.response.to.have.status(400);",
+              "    pm.expect(pm.response.json().error).to.eql('Malformed JSON');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"nome\": \"Teclado\", \"valor\": ",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{baseUrl}}/produto", "host": ["{{baseUrl}}"], "path": ["produto"] }
+      }
+    }
+  ]
+}
